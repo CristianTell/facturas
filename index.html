@@ -433,6 +433,12 @@
         function loadDataFromGoogleSheets() {
             const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
+            // Guardar estado de filtros actuales
+            const filtroOrigen = document.getElementById('filter-origen')?.value || '';
+            const filtroMes = document.getElementById('filter-mes')?.value || '';
+            const filtroTipo = document.getElementById('filter-tipo')?.value || '';
+            const filtroEstado = document.getElementById('filter-estado')?.value || '';
+
             fetch(url)
                 .then(response => response.text())
                 .then(data => {
@@ -469,6 +475,13 @@
                     }
 
                     initFilters();
+
+                    // Restaurar filtros
+                    if (filtroOrigen) document.getElementById('filter-origen').value = filtroOrigen;
+                    if (filtroMes) document.getElementById('filter-mes').value = filtroMes;
+                    if (filtroTipo) document.getElementById('filter-tipo').value = filtroTipo;
+                    if (filtroEstado) document.getElementById('filter-estado').value = filtroEstado;
+
                     applyFilters();
                 })
                 .catch(error => {
