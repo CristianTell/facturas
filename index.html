@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Facturas - Heraldica Capital Group</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+            color: #1a3a5c;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #0a1b3f 0%, #1a3a5c 100%);
+            color: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #D4AF37;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo span {
+            font-size: 28px;
+        }
+
+        .header-info {
+            text-align: right;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        /* Contenedor principal */
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #0a1b3f;
+            margin-bottom: 30px;
+        }
+
+        /* Filtros */
+        .filters-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .filters-section h3 {
+            color: #D4AF37;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #0a1b3f;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group select {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: white;
+            color: #0a1b3f;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .filter-group select:hover {
+            border-color: #D4AF37;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #D4AF37;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        /* Tabla */
+        .table-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #0a1b3f 0%, #1a3a5c 100%);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+
+        .table-header h3 {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .table-info {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead tr {
+            background-color: #f0f0f0;
+            border-bottom: 2px solid #D4AF37;
+        }
+
+        thead th {
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 12px;
+            color: #0a1b3f;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+
+        tbody tr:hover {
+            background-color: #fafafa;
+        }
+
+        tbody td {
+            padding: 12px 15px;
+            font-size: 13px;
+        }
+
+        /* Estados */
+        .estado-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .estado-pagada {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .estado-no-pagada {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        /* Urgencia por días */
+        .urgencia-rojo {
+            color: #c62828;
+            font-weight: bold;
+        }
+
+        .urgencia-amarillo {
+            color: #f9a825;
+            font-weight: bold;
+        }
+
+        .urgencia-verde {
+            color: #2e7d32;
+            font-weight: bold;
+        }
+
+        /* Paginación */
+        .pagination-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .pagination-section button,
+        .pagination-section span {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            color: #0a1b3f;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .pagination-section button:hover {
+            background-color: #D4AF37;
+            color: white;
+            border-color: #D4AF37;
+        }
+
+        .pagination-section button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-section .active {
+            background-color: #0a1b3f;
+            color: white;
+            border-color: #0a1b3f;
+        }
+
+        /* Sin datos */
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 12px;
+            margin-top: 40px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .table-wrapper {
+                font-size: 12px;
+            }
+
+            tbody td {
+                padding: 8px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <span>⚜️</span>
+                <div>Heraldica Capital Group</div>
+            </div>
+            <div class="header-info">
+                <div id="current-date"></div>
+                <div id="last-update">Última actualización: Cargando...</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenedor principal -->
+    <div class="container">
+        <h1 class="page-title">Gestión de Facturas y Pagos</h1>
+
+        <!-- Filtros -->
+        <div class="filters-section">
+            <h3>Filtros</h3>
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label for="filter-origen">Origen</label>
+                    <select id="filter-origen">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-mes">Mes</label>
+                    <select id="filter-mes">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-tipo">Tipo</label>
+                    <select id="filter-tipo">
+                        <option value="">Todos</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-estado">Estado</label>
+                    <select id="filter-estado">
+                        <option value="">Todos</option>
+                        <option value="PAGADA">Pagada</option>
+                        <option value="POR PAGAR">Por Pagar</option>
+                        <option value="NO PAGADA">No Pagada</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="table-section">
+            <div class="table-header">
+                <h3>Registros</h3>
+                <div class="table-info">
+                    <span id="record-count">0 registros</span>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table id="facturas-table">
+                    <thead>
+                        <tr>
+                            <th>Origen</th>
+                            <th>Tipo</th>
+                            <th>Detalle</th>
+                            <th>Mes</th>
+                            <th>Monto</th>
+                            <th>Fecha Vencimiento</th>
+                            <th>Estado</th>
+                            <th>Fecha Pago</th>
+                            <th>Días</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-body">
+                        <tr>
+                            <td colspan="9" class="no-data">Cargando datos desde Google Sheets...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            <div class="pagination-section">
+                <button id="prev-btn" onclick="previousPage()">← Anterior</button>
+                <div id="pagination-numbers"></div>
+                <button id="next-btn" onclick="nextPage()">Siguiente →</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>Sistema de Gestión de Facturas © 2026 - Heraldica Capital Group</p>
+    </footer>
+
+    <script>
+        // ID del Google Sheets
+        const SHEET_ID = '1f437yPNJH68gWCiyDtLqP7fpkiWw5AqwFdi9XECvEZU';
+        const SHEET_NAME = 'Sheet1';
+
+        let allFacturas = [];
+        let filteredFacturas = [];
+        let currentPage = 1;
+        const itemsPerPage = 50;
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDataFromGoogleSheets();
+            updateDate();
+            setInterval(loadDataFromGoogleSheets, 5000); // Actualizar cada 5 segundos
+        });
+
+        // Cargar datos desde Google Sheets
+        function loadDataFromGoogleSheets() {
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+
+            fetch(url)
+                .then(response => response.text())
+                .then(data => {
+                    // Limpiar la respuesta JSONP
+                    const jsonString = data.substring(data.indexOf('{'), data.lastIndexOf('}') + 1);
+                    const jsonData = JSON.parse(jsonString);
+
+                    allFacturas = [];
+
+                    // Procesar filas
+                    if (jsonData.table && jsonData.table.rows) {
+                        jsonData.table.rows.forEach((row, index) => {
+                            if (index === 0) return; // Saltar encabezado
+
+                            const cells = row.c;
+                            if (cells && cells.length >= 8) {
+                                const factura = {
+                                    origen: cells[0] ? cells[0].v : '',
+                                    tipo: cells[1] ? cells[1].v : '',
+                                    detalle: cells[2] ? cells[2].v : '',
+                                    mes: cells[3] ? cells[3].v : '',
+                                    monto: cells[4] ? cells[4].v : '',
+                                    fechaVencimiento: cells[5] ? cells[5].v : '',
+                                    estado: cells[6] ? cells[6].v : '',
+                                    fechaPago: cells[7] ? cells[7].v : ''
+                                };
+                                allFacturas.push(factura);
+                            }
+                        });
+                    }
+
+                    initFilters();
+                    applyFilters();
+                })
+                .catch(error => {
+                    console.log('Error cargando datos:', error);
+                    // Mostrar datos de ejemplo si falla
+                    loadDataDeEjemplo();
+                });
+        }
+
+        // Datos de ejemplo (fallback)
+        function loadDataDeEjemplo() {
+            allFacturas = [
+                { origen: 'PLANTA', tipo: 'SERVICIO', detalle: 'INTERNET', mes: 'AGOSTO', monto: 71400, fechaVencimiento: '2026-09-01', estado: 'NO PAGADA', fechaPago: '' },
+                { origen: 'OFICINA - HEROES', tipo: 'SERVICIO', detalle: 'INTERNET', mes: 'AGOSTO', monto: 140000, fechaVencimiento: '2026-09-01', estado: 'NO PAGADA', fechaPago: '' },
+                { origen: 'PLANTA', tipo: 'SERVICIO', detalle: 'LUZ', mes: 'AGOSTO', monto: 319530, fechaVencimiento: '2026-09-03', estado: 'NO PAGADA', fechaPago: '' },
+                { origen: 'OFICINA - HEROES', tipo: 'SERVICIO', detalle: 'LUZ', mes: 'AGOSTO', monto: 359680, fechaVencimiento: '2026-09-03', estado: 'NO PAGADA', fechaPago: '' },
+                { origen: 'HOGAR - GENERAL', tipo: 'MATRIMONIO', detalle: 'PAGOS PENDIENTES MATRIMONIO', mes: 'AGOSTO', monto: '?', fechaVencimiento: 'INMEDIATO', estado: 'NO PAGADA', fechaPago: '' },
+                { origen: 'OFICINA - GENERAL', tipo: 'SERVICIO', detalle: 'GODADDY', mes: 'AGOSTO', monto: 95988, fechaVencimiento: '2026-09-09', estado: 'NO PAGADA', fechaPago: '' },
+            ];
+            initFilters();
+            applyFilters();
+        }
+
+        // Actualizar fecha
+        function updateDate() {
+            const date = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').textContent = date.toLocaleDateString('es-CO', options);
+            document.getElementById('last-update').textContent = 'Última actualización: ' + date.toLocaleTimeString('es-CO');
+        }
+
+        // Inicializar filtros
+        function initFilters() {
+            const origenes = [...new Set(allFacturas.map(f => f.origen))].sort();
+            const meses = [...new Set(allFacturas.map(f => f.mes))].sort();
+            const tipos = [...new Set(allFacturas.map(f => f.tipo))].sort();
+
+            const origenSelect = document.getElementById('filter-origen');
+            const mesSelect = document.getElementById('filter-mes');
+            const tipoSelect = document.getElementById('filter-tipo');
+
+            // Limpiar opciones anteriores
+            origenSelect.innerHTML = '<option value="">Todos</option>';
+            mesSelect.innerHTML = '<option value="">Todos</option>';
+            tipoSelect.innerHTML = '<option value="">Todos</option>';
+
+            origenes.forEach(origen => {
+                const option = document.createElement('option');
+                option.value = origen;
+                option.textContent = origen;
+                origenSelect.appendChild(option);
+            });
+
+            meses.forEach(mes => {
+                const option = document.createElement('option');
+                option.value = mes;
+                option.textContent = mes;
+                mesSelect.appendChild(option);
+            });
+
+            tipos.forEach(tipo => {
+                const option = document.createElement('option');
+                option.value = tipo;
+                option.textContent = tipo;
+                tipoSelect.appendChild(option);
+            });
+
+            // Event listeners
+            origenSelect.addEventListener('change', applyFilters);
+            mesSelect.addEventListener('change', applyFilters);
+            tipoSelect.addEventListener('change', applyFilters);
+            document.getElementById('filter-estado').addEventListener('change', applyFilters);
+        }
+
+        // Aplicar filtros
+        function applyFilters() {
+            const origen = document.getElementById('filter-origen').value;
+            const mes = document.getElementById('filter-mes').value;
+            const tipo = document.getElementById('filter-tipo').value;
+            const estado = document.getElementById('filter-estado').value;
+
+            filteredFacturas = allFacturas.filter(f => {
+                return (origen === '' || f.origen === origen) &&
+                       (mes === '' || f.mes === mes) &&
+                       (tipo === '' || f.tipo === tipo) &&
+                       (estado === '' || f.estado.includes(estado));
+            });
+
+            currentPage = 1;
+            renderTable();
+            updatePagination();
+        }
+
+        // Renderizar tabla
+        function renderTable() {
+            const tbody = document.getElementById('tabla-body');
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginatedData = filteredFacturas.slice(start, end);
+
+            if (paginatedData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="no-data">No hay registros que coincidan con los filtros</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = paginatedData.map(factura => {
+                const hoy = new Date();
+
+                let diasFaltantes = 999;
+                let classDias = '';
+                let textoDias = '';
+
+                if (factura.estado.includes('PAGADA') && factura.fechaPago) {
+                    textoDias = '✓ Pagada';
+                    classDias = 'estado-pagada';
+                } else if (factura.fechaVencimiento.toString().toUpperCase().includes('INMEDIATO')) {
+                    textoDias = '🔴 VENCIDA';
+                    classDias = 'urgencia-rojo';
+                } else {
+                    const vencimiento = new Date(factura.fechaVencimiento);
+                    diasFaltantes = Math.ceil((vencimiento - hoy) / (1000 * 60 * 60 * 24));
+
+                    if (diasFaltantes < 0) {
+                        textoDias = '🔴 VENCIDA';
+                        classDias = 'urgencia-rojo';
+                    } else if (diasFaltantes <= 5) {
+                        textoDias = diasFaltantes + ' días';
+                        classDias = 'urgencia-rojo';
+                    } else if (diasFaltantes <= 10) {
+                        textoDias = diasFaltantes + ' días';
+                        classDias = 'urgencia-amarillo';
+                    } else {
+                        textoDias = diasFaltantes + ' días';
+                        classDias = 'urgencia-verde';
+                    }
+                }
+
+                return `
+                    <tr>
+                        <td><strong>${factura.origen}</strong></td>
+                        <td>${factura.tipo}</td>
+                        <td>${factura.detalle}</td>
+                        <td>${factura.mes}</td>
+                        <td>$${factura.monto === '?' ? '?' : (typeof factura.monto === 'number' ? factura.monto.toLocaleString('es-CO') : factura.monto)}</td>
+                        <td>${factura.fechaVencimiento}</td>
+                        <td><span class="estado-badge ${factura.estado.includes('PAGADA') && factura.fechaPago ? 'estado-pagada' : 'estado-no-pagada'}">${factura.estado}</span></td>
+                        <td>${factura.fechaPago || '-'}</td>
+                        <td><span class="${classDias}">${textoDias}</span></td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('record-count').textContent = `${filteredFacturas.length} registros`;
+        }
+
+        // Paginación
+        function updatePagination() {
+            const totalPages = Math.ceil(filteredFacturas.length / itemsPerPage);
+            const paginationNumbers = document.getElementById('pagination-numbers');
+            paginationNumbers.innerHTML = '';
+
+            for (let i = 1; i <= Math.min(totalPages, 10); i++) {
+                const button = document.createElement('button');
+                button.textContent = i;
+                button.className = i === currentPage ? 'active' : '';
+                button.onclick = () => {
+                    currentPage = i;
+                    renderTable();
+                    updatePagination();
+                };
+                paginationNumbers.appendChild(button);
+            }
+
+            document.getElementById('prev-btn').disabled = currentPage === 1;
+            document.getElementById('next-btn').disabled = currentPage === totalPages || totalPages === 0;
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredFacturas.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+                updatePagination();
+            }
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+                updatePagination();
+            }
+        }
+
+        // Actualizar fecha cada 5 segundos
+        setInterval(updateDate, 5000);
+    </script>
+</body>
+</html>
