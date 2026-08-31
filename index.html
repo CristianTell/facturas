@@ -359,7 +359,7 @@
                         <option value="">Todos</option>
                         <option value="PAGADA">Pagada</option>
                         <option value="POR PAGAR">Por Pagar</option>
-                        <option value="NO PAGADA">No Pagada</option>
+                        <option value="VENCIDA">Vencida</option>
                     </select>
                 </div>
                 <div class="filter-group" style="display: flex; align-items: flex-end;">
@@ -547,10 +547,11 @@
             const estado = document.getElementById('filter-estado').value;
 
             filteredFacturas = allFacturas.filter(f => {
+                const estadoMatch = estado === '' || f.estado === estado || f.estado.includes(estado);
                 return (origen === '' || f.origen === origen) &&
                        (mes === '' || f.mes === mes) &&
                        (tipo === '' || f.tipo === tipo) &&
-                       (estado === '' || f.estado.includes(estado));
+                       estadoMatch;
             });
 
             currentPage = 1;
@@ -580,39 +581,63 @@
 
             tbody.innerHTML = paginatedData.map(factura => {
                 const hoy = new Date();
-
                 let diasFaltantes = 999;
                 let classDias = '';
                 let textoDias = '';
                 let fechaFormato = factura.fechaVencimiento;
+                let estadoMostrar = factura.estado;
+                let estadoColor = 'estado-no-pagada';
 
-                if (factura.estado.includes('PAGADA') && factura.fechaPago) {
+                // Determinar estado y color
+                if (factura.estado.includes('PAGADA')) {
+                    estadoMostrar = 'PAGADA';
+                    estadoColor = 'estado-pagada';
                     textoDias = '✓ Pagada';
-                    classDias = 'estado-pagada';
                 } else if (factura.fechaVencimiento.toString().toUpperCase().includes('INMEDIATO')) {
+                    estadoMostrar = 'VENCIDA';
+                    estadoColor = 'estado-no-pagada';
                     textoDias = 'VENCIDA';
                     classDias = 'urgencia-rojo';
                 } else {
                     try {
-                        let vencimiento = new Date(factura.fechaVencimiento);
+                        let fechaStr = factura.fechaVencimiento.toString().trim();
+                        let vencimiento;
 
-                        if (isNaN(vencimiento)) {
-                            vencimiento = new Date(factura.fechaVencimiento.replace(/,/g, '/'));
+                        if (fechaStr.includes('/')) {
+                            const partes = fechaStr.split('/');
+                            if (partes.length === 3) {
+                                const día = parseInt(partes[0], 10);
+                                const mes = parseInt(partes[1], 10) - 1;
+                                const año = parseInt(partes[2], 10);
+                                vencimiento = new Date(año, mes, día);
+                            } else {
+                                vencimiento = new Date(fechaStr);
+                            }
+                        } else {
+                            vencimiento = new Date(fechaStr);
+                        }
+
+                        if (isNaN(vencimiento.getTime())) {
+                            throw new Error('Fecha inválida');
                         }
 
                         diasFaltantes = Math.ceil((vencimiento - hoy) / (1000 * 60 * 60 * 24));
                         fechaFormato = vencimiento.toLocaleDateString('es-CO');
 
                         if (diasFaltantes < 0) {
+                            estadoMostrar = 'VENCIDA';
                             textoDias = 'VENCIDA';
                             classDias = 'urgencia-rojo';
                         } else if (diasFaltantes <= 5) {
+                            estadoMostrar = 'POR PAGAR';
                             textoDias = diasFaltantes + ' días';
                             classDias = 'urgencia-rojo';
                         } else if (diasFaltantes <= 10) {
+                            estadoMostrar = 'POR PAGAR';
                             textoDias = diasFaltantes + ' días';
                             classDias = 'urgencia-amarillo';
                         } else {
+                            estadoMostrar = 'POR PAGAR';
                             textoDias = diasFaltantes + ' días';
                             classDias = 'urgencia-verde';
                         }
@@ -630,8 +655,8 @@
                         <td>${factura.mes}</td>
                         <td>$${factura.monto === '?' ? '?' : (typeof factura.monto === 'number' ? factura.monto.toLocaleString('es-CO') : factura.monto)}</td>
                         <td>${fechaFormato}</td>
-                        <td><span class="estado-badge ${factura.estado.includes('PAGADA') && factura.fechaPago ? 'estado-pagada' : 'estado-no-pagada'}">${factura.estado}</span></td>
-                        <td>${factura.fechaPago || '-'}</td>
+                        <td><span class="estado-badge ${estadoColor}">${estadoMostrar}</span></td>
+                        <td>${factura.fechaPago ? factura.fechaPago.toString().trim() : '-'}</td>
                         <td><span class="${classDias}">${textoDias}</span></td>
                     </tr>
                 `;
