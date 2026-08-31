@@ -448,18 +448,21 @@
                             if (index === 0) return; // Saltar encabezado
 
                             const cells = row.c;
-                            if (cells && cells.length >= 8) {
+                            if (cells && cells.length > 0) {
                                 const factura = {
-                                    origen: cells[0] ? cells[0].v : '',
-                                    tipo: cells[1] ? cells[1].v : '',
-                                    detalle: cells[2] ? cells[2].v : '',
-                                    mes: cells[3] ? cells[3].v : '',
-                                    monto: cells[4] ? cells[4].v : '',
-                                    fechaVencimiento: cells[5] ? cells[5].v : '',
-                                    estado: cells[6] ? cells[6].v : '',
-                                    fechaPago: cells[7] ? cells[7].v : ''
+                                    origen: (cells[0] && cells[0].v) ? cells[0].v : '',
+                                    tipo: (cells[1] && cells[1].v) ? cells[1].v : '',
+                                    detalle: (cells[2] && cells[2].v) ? cells[2].v : '',
+                                    mes: (cells[3] && cells[3].v) ? cells[3].v : '',
+                                    monto: (cells[4] && cells[4].v) ? cells[4].v : '',
+                                    fechaVencimiento: (cells[5] && cells[5].v) ? cells[5].v : '',
+                                    estado: (cells[6] && cells[6].v) ? cells[6].v : '',
+                                    fechaPago: (cells[7] && cells[7].v) ? cells[7].v : ''
                                 };
-                                allFacturas.push(factura);
+                                // Solo agregar si tiene al menos origen
+                                if (factura.origen) {
+                                    allFacturas.push(factura);
+                                }
                             }
                         });
                     }
@@ -603,7 +606,18 @@
                         let fechaStr = factura.fechaVencimiento.toString().trim();
                         let vencimiento;
 
-                        if (fechaStr.includes('/')) {
+                        // Parsear formato Date(yyyy,m,d) de Google Sheets
+                        if (fechaStr.includes('Date(')) {
+                            const match = fechaStr.match(/Date\((\d+),(\d+),(\d+)\)/);
+                            if (match) {
+                                const año = parseInt(match[1], 10);
+                                const mes = parseInt(match[2], 10);
+                                const día = parseInt(match[3], 10);
+                                vencimiento = new Date(año, mes, día);
+                            } else {
+                                vencimiento = new Date(fechaStr);
+                            }
+                        } else if (fechaStr.includes('/')) {
                             const partes = fechaStr.split('/');
                             if (partes.length === 3) {
                                 const día = parseInt(partes[0], 10);
