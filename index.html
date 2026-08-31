@@ -613,7 +613,7 @@
                 let diasFaltantes = 999;
                 let classDias = '';
                 let textoDias = '';
-                let fechaFormato = factura.fechaVencimiento;
+                let fechaFormato = parsearFecha(factura.fechaVencimiento);
                 let estadoMostrar = factura.estado;
                 let estadoColor = 'estado-no-pagada';
 
