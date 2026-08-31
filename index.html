@@ -444,13 +444,17 @@
 
                     // Procesar filas
                     if (jsonData.table && jsonData.table.rows) {
-                        jsonData.table.rows.forEach((row, index) => {
-                            if (index === 0) return; // Saltar encabezado
-
+                        jsonData.table.rows.forEach((row) => {
                             const cells = row.c;
                             if (cells && cells.length > 0) {
+                                const origen = (cells[0] && cells[0].v) ? cells[0].v.toString().trim() : '';
+
+                                // Saltar encabezado verificando contenido
+                                if (origen.toUpperCase() === 'ORIGEN') return;
+                                if (!origen) return; // Saltar filas vacías
+
                                 const factura = {
-                                    origen: (cells[0] && cells[0].v) ? cells[0].v : '',
+                                    origen: origen,
                                     tipo: (cells[1] && cells[1].v) ? cells[1].v : '',
                                     detalle: (cells[2] && cells[2].v) ? cells[2].v : '',
                                     mes: (cells[3] && cells[3].v) ? cells[3].v : '',
@@ -459,10 +463,7 @@
                                     estado: (cells[6] && cells[6].v) ? cells[6].v : '',
                                     fechaPago: (cells[7] && cells[7].v) ? cells[7].v : ''
                                 };
-                                // Solo agregar si tiene al menos origen
-                                if (factura.origen) {
-                                    allFacturas.push(factura);
-                                }
+                                allFacturas.push(factura);
                             }
                         });
                     }
@@ -570,6 +571,31 @@
             applyFilters();
         }
 
+        function parsearFecha(fechaStr) {
+            if (!fechaStr) return '-';
+
+            fechaStr = fechaStr.toString().trim();
+
+            // Parsear formato Date(yyyy,m,d)
+            if (fechaStr.includes('Date(')) {
+                const match = fechaStr.match(/Date\((\d+),(\d+),(\d+)\)/);
+                if (match) {
+                    const año = parseInt(match[1], 10);
+                    const mes = parseInt(match[2], 10);
+                    const día = parseInt(match[3], 10);
+                    const fecha = new Date(año, mes, día);
+                    return fecha.toLocaleDateString('es-CO');
+                }
+            }
+
+            // Parsear formato dd/mm/yyyy
+            if (fechaStr.includes('/')) {
+                return fechaStr;
+            }
+
+            return fechaStr;
+        }
+
         // Renderizar tabla
         function renderTable() {
             const tbody = document.getElementById('tabla-body');
@@ -670,7 +696,7 @@
                         <td>$${factura.monto === '?' ? '?' : (typeof factura.monto === 'number' ? factura.monto.toLocaleString('es-CO') : factura.monto)}</td>
                         <td>${fechaFormato}</td>
                         <td><span class="estado-badge ${estadoColor}">${estadoMostrar}</span></td>
-                        <td>${factura.fechaPago ? factura.fechaPago.toString().trim() : '-'}</td>
+                        <td>${parsearFecha(factura.fechaPago)}</td>
                         <td><span class="${classDias}">${textoDias}</span></td>
                     </tr>
                 `;
